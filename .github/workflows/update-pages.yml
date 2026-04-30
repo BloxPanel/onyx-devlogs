@@ -21,30 +21,59 @@ jobs:
         run: |
           mkdir -p docs
 
-          echo "<!DOCTYPE html>" > docs/index.html
-          echo "<html lang='en'>" >> docs/index.html
-          echo "<head>" >> docs/index.html
-          echo "<meta charset='UTF-8'>" >> docs/index.html
-          echo "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" >> docs/index.html
-          echo "<title>Bot Changelog</title>" >> docs/index.html
+          python3 - << 'EOF'
+          import os
+          import markdown
 
-          # DARK MODE FIX
-          echo "<style>" >> docs/index.html
-          echo "body { background:#0d0d0d; color:#e6e6e6; font-family:Arial; padding:40px; }" >> docs/index.html
-          echo "pre { background:#111; padding:15px; border-radius:8px; overflow-x:auto; }" >> docs/index.html
-          echo "h1, h2 { color:#ffffff; }" >> docs/index.html
-          echo "</style>" >> docs/index.html
+          release_body = """${{ github.event.release.body }}"""
 
-          echo "</head><body>" >> docs/index.html
+          html_body = markdown.markdown(release_body)
 
-          echo "<h1>🚀 Bot Changelog</h1>" >> docs/index.html
-          echo "<h2>${{ github.event.release.tag_name }} — Release Notes</h2>" >> docs/index.html
+          with open("docs/index.html", "w") as f:
+              f.write("""
+          <!DOCTYPE html>
+          <html>
+          <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Bot Changelog</title>
 
-          echo "<pre>" >> docs/index.html
-          echo "${{ github.event.release.body }}" >> docs/index.html
-          echo "</pre>" >> docs/index.html
+          <style>
+          body {
+              background:#0d0d0d;
+              color:#e6e6e6;
+              font-family: Arial, sans-serif;
+              padding:40px;
+          }
+          a { color:#4da3ff; }
+          code {
+              background:#111;
+              padding:2px 5px;
+              border-radius:4px;
+          }
+          pre {
+              background:#111;
+              padding:15px;
+              border-radius:8px;
+              overflow-x:auto;
+          }
+          h1, h2, h3 {
+              color:white;
+          }
+          </style>
 
-          echo "</body></html>" >> docs/index.html
+          </head>
+          <body>
+
+          <h1>🚀 Bot Changelog</h1>
+          <h2>${{ github.event.release.tag_name }} — Release Notes</h2>
+
+          """ + html_body + """
+
+          </body>
+          </html>
+          """)
+          EOF
 
       - name: Commit and push changes
         run: |
