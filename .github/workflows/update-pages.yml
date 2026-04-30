@@ -16,31 +16,32 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: true
 
       - name: Generate changelog from release
         run: |
           mkdir -p docs
 
-          echo "<!DOCTYPE html>" > docs/index.html
-          echo "<html lang='en'>" >> docs/index.html
-          echo "<head>" >> docs/index.html
-          echo "<meta charset='UTF-8'>" >> docs/index.html
-          echo "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" >> docs/index.html
-          echo "<title>Bot Changelog</title>" >> docs/index.html
-          echo "<link rel='stylesheet' href='style.css'>" >> docs/index.html
-          echo "</head>" >> docs/index.html
+          cat <<EOF > docs/index.html
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Bot Changelog</title>
+            <link rel="stylesheet" href="style.css">
+          </head>
 
-          echo "<body>" >> docs/index.html
-          echo "<h1>🚀 Bot Changelog</h1>" >> docs/index.html
+          <body>
+            <h1>🚀 Bot Changelog</h1>
 
-          echo "<h2>${{ github.event.release.tag_name }} — Release Notes</h2>" >> docs/index.html
-          echo "<pre style='white-space: pre-wrap; background:#111; padding:15px; border-radius:8px;'>" >> docs/index.html
-          echo "${{ github.event.release.body }}" >> docs/index.html
-          echo "</pre>" >> docs/index.html
+            <h2>${{ github.event.release.tag_name }} — Release Notes</h2>
 
-          echo "</body>" >> docs/index.html
-          echo "</html>" >> docs/index.html
+            <pre style="white-space: pre-wrap; background:#111; padding:15px; border-radius:8px;">
+          ${{ github.event.release.body }}
+            </pre>
+          </body>
+          </html>
+          EOF
 
       - name: Commit and push changes
         run: |
@@ -51,4 +52,4 @@ jobs:
 
           git commit -m "docs: update changelog for ${{ github.event.release.tag_name }}" || exit 0
 
-          git push
+          git push origin HEAD:main
