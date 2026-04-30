@@ -1,0 +1,36 @@
+name: Update GitHub Pages Changelog
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Generate changelog from release
+        run: |
+          mkdir -p docs
+
+          echo "# 🚀 Bot Changelog" > docs/index.md
+          echo "" >> docs/index.md
+
+          echo "## ${{ github.event.release.tag_name }} — Release Notes" >> docs/index.md
+          echo "" >> docs/index.md
+          echo "${{ github.event.release.body }}" >> docs/index.md
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git add docs/index.md
+          git commit -m "docs: update changelog for ${{ github.event.release.tag_name }}" || exit 0
+          git push
