@@ -19,18 +19,33 @@ jobs:
         run: |
           mkdir -p docs
 
-          echo "# 🚀 Bot Changelog" > docs/index.md
-          echo "" >> docs/index.md
+          echo "<!DOCTYPE html>" > docs/index.html
+          echo "<html lang='en'>" >> docs/index.html
+          echo "<head>" >> docs/index.html
+          echo "<meta charset='UTF-8'>" >> docs/index.html
+          echo "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" >> docs/index.html
+          echo "<title>Bot Changelog</title>" >> docs/index.html
+          echo "<link rel='stylesheet' href='style.css'>" >> docs/index.html
+          echo "</head>" >> docs/index.html
 
-          echo "## ${{ github.event.release.tag_name }} — Release Notes" >> docs/index.md
-          echo "" >> docs/index.md
-          echo "${{ github.event.release.body }}" >> docs/index.md
+          echo "<body>" >> docs/index.html
+          echo "<h1>🚀 Bot Changelog</h1>" >> docs/index.html
+
+          echo "<h2>${{ github.event.release.tag_name }} — Release Notes</h2>" >> docs/index.html
+          echo "<pre style='white-space: pre-wrap; background:#111; padding:15px; border-radius:8px;'>" >> docs/index.html
+          echo "${{ github.event.release.body }}" >> docs/index.html
+          echo "</pre>" >> docs/index.html
+
+          echo "</body>" >> docs/index.html
+          echo "</html>" >> docs/index.html
 
       - name: Commit and push changes
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          git add docs/index.md
+          git add docs/index.html
+
           git commit -m "docs: update changelog for ${{ github.event.release.tag_name }}" || exit 0
+
           git push
