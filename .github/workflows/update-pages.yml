@@ -14,66 +14,60 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Generate changelog from release
+      - name: Install dependencies
+        run: pip install markdown
+
+      - name: Generate script safely
         run: |
           mkdir -p docs
 
-          python3 - << 'EOF'
-          import os
-          import markdown
+          echo 'import markdown' > generate.py
+          echo '' >> generate.py
 
-          release_body = """${{ github.event.release.body }}"""
+          echo 'release_body = """${{ github.event.release.body }}"""' >> generate.py
+          echo 'tag = """${{ github.event.release.tag_name }}"""' >> generate.py
 
-          html_body = markdown.markdown(release_body)
+          echo '' >> generate.py
 
-          with open("docs/index.html", "w") as f:
-              f.write("""
-          <!DOCTYPE html>
-          <html>
-          <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Bot Changelog</title>
+          echo 'html_body = markdown.markdown(release_body)' >> generate.py
 
-          <style>
-          body {
-              background:#0d0d0d;
-              color:#e6e6e6;
-              font-family: Arial, sans-serif;
-              padding:40px;
-          }
-          a { color:#4da3ff; }
-          code {
-              background:#111;
-              padding:2px 5px;
-              border-radius:4px;
-          }
-          pre {
-              background:#111;
-              padding:15px;
-              border-radius:8px;
-              overflow-x:auto;
-          }
-          h1, h2, h3 {
-              color:white;
-          }
-          </style>
+          echo '' >> generate.py
 
-          </head>
-          <body>
+          echo 'html = f"""' >> generate.py
+          echo '<!DOCTYPE html>' >> generate.py
+          echo '<html>' >> generate.py
+          echo '<head>' >> generate.py
+          echo '<meta charset="UTF-8">' >> generate.py
+          echo '<meta name="viewport" content="width=device-width, initial-scale=1.0">' >> generate.py
+          echo '<title>Bot Changelog</title>' >> generate.py
 
-          <h1>🚀 Bot Changelog</h1>
-          <h2>${{ github.event.release.tag_name }} — Release Notes</h2>
+          echo '<style>' >> generate.py
+          echo 'body { background:#0d0d0d; color:#e6e6e6; font-family: Arial; padding:40px; }' >> generate.py
+          echo 'a { color:#4da3ff; }' >> generate.py
+          echo 'code { background:#111; padding:2px 5px; border-radius:4px; }' >> generate.py
+          echo 'pre { background:#111; padding:15px; border-radius:8px; overflow-x:auto; }' >> generate.py
+          echo 'h1,h2,h3 { color:white; }' >> generate.py
+          echo '</style>' >> generate.py
 
-          """ + html_body + """
+          echo '</head>' >> generate.py
+          echo '<body>' >> generate.py
 
-          </body>
-          </html>
-          """)
-          EOF
+          echo '<h1>🚀 Bot Changelog</h1>' >> generate.py
+          echo '<h2>{tag} — Release Notes</h2>' >> generate.py
+
+          echo '{html_body}' >> generate.py
+
+          echo '</body>' >> generate.py
+          echo '</html>' >> generate.py
+
+          echo '"""' >> generate.py
+
+          echo 'with open("docs/index.html", "w", encoding="utf-8") as f:' >> generate.py
+          echo '    f.write(html)' >> generate.py
+
+      - name: Run generator
+        run: python3 generate.py
 
       - name: Commit and push changes
         run: |
@@ -81,7 +75,5 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           git add docs/index.html
-
           git commit -m "docs: update changelog for ${{ github.event.release.tag_name }}" || exit 0
-
           git push origin HEAD:main
